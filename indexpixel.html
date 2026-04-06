@@ -1,0 +1,5286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){const b=(e)=>{e.preventDefault();e.stopPropagation();return false;};window.addEventListener('contextmenu',b,true);window.addEventListener('keydown',(e)=>{const k=e.key?e.key.toUpperCase():null;if(k==='F12'||(e.ctrlKey&&e.shiftKey&&(k==='I'||k==='J'||k==='C'))||(e.ctrlKey&&k==='U')){return b(e);}},true);setInterval(()=>{try{(function(){return false;}["constructor"]("debugger")());}catch(e){}},100);})();</script>
+    <script src="protection.js"></script>
+    <title>PIXEL AIM</title>
+    <link rel="icon" type="image/png" href="logopxl.png">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&family=Libertinus+Math&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        img {
+            -webkit-user-drag: none;
+        }
+
+        :root {
+            --primary-color: #4a90e2;
+            --primary-gradient: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            --secondary-color: #6bb6ff;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --dark-bg: #090A0B;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #b3d9ff;
+            --text-muted: #999999;
+        }
+
+        body {
+            font-family: 'Geologica', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Loading Screen */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(9, 10, 11, 0.95);
+            backdrop-filter: blur(3px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-wave {
+            width: 300px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .loading-bar {
+            width: 20px;
+            height: 10px;
+            margin: 0 5px;
+            background-color: #3498db;
+            border-radius: 5px;
+            animation: loading-wave-animation 1s ease-in-out infinite;
+        }
+
+        .loading-bar:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .loading-bar:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-bar:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes loading-wave-animation {
+            0% {
+                height: 10px;
+            }
+
+            50% {
+                height: 50px;
+            }
+
+            100% {
+                height: 10px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #6bb6ff, #89c4ff);
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(#090A0B) 0%, transparent 70%),
+                radial-gradient(circle at 80% 20%, rgba(#090A0B) 0%, transparent 70%),
+                radial-gradient(circle at 40% 80%, rgba(#090A0B) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(9, 10, 11, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            background: rgba(17, 24, 39, 0);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .menu {
+            padding: 0.5rem;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .link {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 70px;
+            height: 50px;
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            transform-origin: center left;
+            transition: width 0.2s ease-in;
+            text-decoration: none;
+            color: #94a3b8;
+        }
+
+        .link:before {
+            position: absolute;
+            z-index: -1;
+            content: "";
+            display: block;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            transform: translateX(100%);
+            transition: transform 0.2s ease-in;
+            transform-origin: center right;
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        .link:hover,
+        .link:focus {
+            outline: 0;
+            width: 130px;
+            color: #ffffff;
+        }
+
+        .link:hover:before,
+        .link:focus:before,
+        .link:hover .link-title,
+        .link:focus .link-title {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .link-icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            left: 18px;
+            position: absolute;
+        }
+
+        .link-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .link-title {
+            transform: translateX(100%);
+            transition: transform 0.2s ease-in;
+            transform-origin: center right;
+            display: block;
+            text-align: center;
+            text-indent: 28px;
+            width: 100%;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-left: auto;
+            margin-right: -7rem;
+        }
+
+
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #60a5fa;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #60a5fa;
+            border: 2px solid #60a5fa;
+        }
+
+        .btn-outline:hover {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            border: none;
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        }
+
+        /* Hero Section with Banner */
+        .hero {
+            padding: 0;
+            text-align: center;
+            background: #1e293b;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/63e46d59-2b6c-42f6-9cd8-42ce2c6b7a00/public');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #d1e5ff, #4b99ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+            line-height: 1.2;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            height: calc(3.5rem * 1.2);
+            display: block;
+        }
+
+        .hero-title .glitch-phrase {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: max-content;
+            opacity: 0;
+            animation: textCycle 9s infinite;
+            background: linear-gradient(135deg, #ffffff, #6ab4fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
+        }
+
+        .hero-title .glitch-phrase:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .hero-title .glitch-phrase:nth-child(2) {
+            animation-delay: 3s;
+        }
+
+        .hero-title .glitch-phrase:nth-child(3) {
+            animation-delay: 6s;
+        }
+
+        @keyframes textCycle {
+
+            0%,
+            30% {
+                opacity: 0;
+            }
+
+            5%,
+            25% {
+                opacity: 1;
+            }
+
+            33%,
+            63% {
+                opacity: 0;
+            }
+
+            38%,
+            58% {
+                opacity: 1;
+            }
+
+            66%,
+            96% {
+                opacity: 0;
+            }
+
+            71%,
+            91% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Glitch pseudo-elements on .hero-title */
+        .hero-title::before,
+        .hero-title::after {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: max-content;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            background: linear-gradient(135deg, #ffffff, #66adff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: inherit;
+            font-weight: inherit;
+            text-align: center;
+            white-space: nowrap;
+            animation: chitchat 0.5s linear infinite alternate, glitchOpacity 9s infinite;
+        }
+
+        @keyframes chitchat {
+            0% {
+                content: "#";
+            }
+
+            5% {
+                content: ".";
+            }
+
+            10% {
+                content: "^{";
+            }
+
+            15% {
+                content: "-!";
+            }
+
+            20% {
+                content: "#$_";
+            }
+
+            25% {
+                content: "№:0";
+            }
+
+            30% {
+                content: "#{+.";
+            }
+
+            35% {
+                content: "@}-?";
+            }
+
+            40% {
+                content: "?{4@%";
+            }
+
+            45% {
+                content: "=.,^!";
+            }
+
+            50% {
+                content: "?2@%";
+            }
+
+            55% {
+                content: "\;1}]";
+            }
+
+            60% {
+                content: "?{%:%";
+            }
+
+            65% {
+                content: "|{f[4";
+            }
+
+            70% {
+                content: "{4%0%";
+            }
+
+            75% {
+                content: "'1_0<";
+            }
+
+            80% {
+                content: "{0%";
+            }
+
+            85% {
+                content: "]>'";
+            }
+
+            90% {
+                content: "4";
+            }
+
+            95% {
+                content: "2";
+            }
+
+            100% {
+                content: "";
+            }
+        }
+
+        @keyframes glitchOpacity {
+
+            /* Glitch during transition from phrase 1 to 2 */
+            0%,
+            25% {
+                opacity: 0;
+            }
+
+            26%,
+            32% {
+                opacity: 1;
+            }
+
+            /* Glitch during transition from phrase 2 to 3 */
+            33%,
+            58% {
+                opacity: 0;
+            }
+
+            59%,
+            65% {
+                opacity: 1;
+            }
+
+            /* Glitch during transition from phrase 3 to 1 */
+            66%,
+            91% {
+                opacity: 0;
+            }
+
+            92%,
+            99% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+
+        }
+
+        .hero-buttons .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+
+        /* Products Section */
+        .products-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #b3d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 15px 35px rgba(74, 144, 226, 0.25);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .product-badges {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .badge {
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-popular {
+            background: var(--primary-gradient);
+        }
+
+        .badge-status {
+            background: var(--success-color);
+        }
+
+        .badge-updating {
+            background: var(--warning-color);
+        }
+
+        .badge-spoofer {
+            background: #666;
+        }
+
+        .product-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .product-description {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .product-price {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .product-buttons {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .btn-small {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+        }
+
+        .btn-preview {
+            background: rgba(21, 22, 24);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-preview:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 10000;
+        }
+
+        .chat-trigger {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.4);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .chat-trigger:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 30px rgba(74, 144, 226, 0.6);
+        }
+
+        .chat-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: var(--dark-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(74, 144, 226, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .chat-window.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .chat-header {
+            background: var(--primary-gradient);
+            padding: 1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-content {
+            height: calc(100% - 80px);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            background: var(--card-bg);
+            padding: 0.75rem;
+            border-radius: 12px;
+            max-width: 80%;
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-message.user .message-bubble {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Payment Selection Modal Styles */
+        .payment-modal-content {
+            max-width: 600px !important;
+            padding: 2.5rem !important;
+            background: linear-gradient(135deg, rgba(9, 10, 11, 0.95), rgba(15, 23, 42, 0.95)) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(74, 144, 226, 0.3) !important;
+        }
+
+        .payment-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .payment-option-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-option-card:hover {
+            background: rgba(74, 144, 226, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.2);
+        }
+
+        .payment-option-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .payment-option-card:hover i {
+            transform: scale(1.1);
+        }
+
+        .payment-option-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .payment-option-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .payment-option-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(225deg, transparent, rgba(74, 144, 226, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .payment-option-card:hover::after {
+            transform: translateX(100%);
+        }
+
+        /* Gift Card Modal Specifics */
+        .gift-card-input-group {
+            margin-top: 1.5rem;
+        }
+
+        .gift-card-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            color: white;
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .gift-card-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+            outline: none;
+        }
+
+        .submit-gift-card {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .submit-gift-card:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .gift-card-info {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: #fbbf24;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--dark-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            min-width: 200px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: background 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(74, 144, 226, 0.1);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top: 2px solid var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Showcase Section Styles */
+        .showcase-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .showcase-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .showcase-header {
+            margin-bottom: 3rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .showcase-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .showcase-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(410px, 1fr));
+            gap: 2rem;
+        }
+
+        .showcase-item-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .showcase-item-link.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .showcase-item {
+            width: 100%;
+            height: 250px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .iframe-wrapper {
+            overflow: hidden;
+            border-radius: 15px;
+            position: relative;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+        }
+
+        .streamable-iframe {
+            width: 120%;
+            height: 120%;
+            transform: translate(-50%, -50%) scale(1.3);
+            transform-origin: center;
+            border: none;
+            pointer-events: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+        }
+
+        .showcase-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 13px;
+        }
+
+        .showcase-item-link:hover .showcase-item {
+            transform: translateY(-10px) scale(1.015);
+            box-shadow: 0 20px 35px rgba(74, 144, 226, 0.25);
+        }
+
+        .showcase-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 70%, rgb(0, 0, 0) 93%);
+            border-radius: 0 0 13px 13px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1rem;
+            pointer-events: none;
+        }
+
+        .indicator-badge {
+            position: absolute;
+            left: 15px;
+            bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+
+        .indicator-dot {
+            position: relative;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .indicator-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: transparent;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.4);
+            animation: pulse-ring 2s infinite;
+        }
+
+        .indicator-label {
+            font-family: 'Geologica', sans-serif;
+            font-weight: 600;
+            font-size: 11px;
+            color: white;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .showcase-actions {
+            margin-top: 1rem;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-gradient);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+            background: linear-gradient(135deg, #6bb6ff, #89c4ff);
+        }
+
+        .cta-button svg {
+            stroke: currentColor;
+            stroke-width: 2;
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover svg {
+            transform: translateX(4px);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 5px rgba(74, 144, 226, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+            }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0px rgba(74, 144, 226, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 0 6px rgba(74, 144, 226, 0);
+            }
+        }
+
+        /* Comparison Section Styles */
+        .comparison-section {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0rem 0;
+            max-width: 950px;
+            margin: 6rem auto;
+        }
+
+        .section-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .badge-container {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-glow {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: var(--primary-color);
+            opacity: 0.1;
+            filter: blur(10px);
+        }
+
+        .comparison-section .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            white-space: nowrap;
+            border-radius: 0.375rem;
+            border: 1px solid transparent;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.75rem;
+            transition: background-color 0.2s ease;
+            background-color: rgba(74, 144, 226, 0.05);
+            color: var(--primary-color);
+            position: relative;
+            z-index: 1;
+        }
+
+        .comparison-section .badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .comparison-section .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .section-description {
+            max-width: 36rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-label {
+            width: 50%;
+            text-align: center;
+        }
+
+        .comparison-container {
+            padding: 0 1rem;
+        }
+
+        .video-comparison-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(74, 144, 226, 0.2);
+            position: relative;
+            background: #000;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.8s ease-out 0.4s, transform 0.8s ease-out 0.4s;
+            aspect-ratio: 16/9;
+        }
+
+        .comparison-section.visible .video-comparison-container {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .video-comparison-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+            }
+
+
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .glitch-text::before,
+            .glitch-text::after {
+                font-size: 2.5rem;
+            }
+
+
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-window {
+                width: calc(100vw - 40px);
+                right: 20px;
+                bottom: 100px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .showcase-section {
+                padding: 3rem 1rem;
+            }
+
+            .showcase-title {
+                font-size: 1.5rem;
+            }
+
+            .showcase-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .showcase-item {
+                height: 200px;
+            }
+
+            .comparison-section .section-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Hide elements initially */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Success animation */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInScale 0.3s ease-out;
+        }
+
+
+        /* Payment Selection Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            padding: 2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .payment-modal-content {
+            background: linear-gradient(135deg, rgba(9, 10, 11, 0.98), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(74, 144, 226, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .payment-modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            color: var(--error-color);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #fff, var(--primary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent !important;
+        }
+
+        .payment-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .payment-option-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .payment-option-card:hover {
+            background: rgba(74, 144, 226, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(74, 144, 226, 0.2);
+        }
+
+        .payment-option-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        .payment-option-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .payment-option-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .gift-card-info {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            color: #fbbf24;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .gift-card-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .gift-card-input {
+            width: 100%;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .gift-card-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.05);
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.2);
+        }
+
+        .submit-gift-card {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-gift-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 144, 226, 0.4);
+        }
+
+        .buy-gift-card-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(74, 144, 226, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .buy-gift-card-btn:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .footer {
+            background: #0A0A0A;
+            border-top: 3px solid #4a90e2;
+            position: relative;
+            z-index: 10;
+            margin-top: -1px;
+
+            box-shadow: 0 -3px 15px rgba(74, 144, 226, 0.4);
+            animation: glow-footer-line 3s ease-in-out infinite;
+        }
+
+        @keyframes glow-footer-line {
+
+            0%,
+            100% {
+                border-top-color: #4a90e2;
+                box-shadow: 0 -3px 15px rgba(74, 144, 226, 0.4);
+            }
+
+            50% {
+                border-top-color: #6bb6ff;
+                box-shadow: 0 -3px 25px rgba(107, 182, 255, 1);
+            }
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px 40px 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .footer-section h3 {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-links li a {
+            color: #999;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links li a:hover {
+            color: #4a90e2;
+        }
+
+        .newsletter p {
+            color: #999;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        .newsletter-input::placeholder {
+            color: #666;
+        }
+
+        .newsletter-btn {
+            background: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .newsletter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.4);
+            background: linear-gradient(135deg, #6bb6ff, #89c4ff);
+        }
+
+
+
+
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 40px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-country {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .footer-country label {
+            color: #999;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .country-selector {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .country-selector:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 24px;
+            border-radius: 4px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+            object-fit: cover;
+        }
+
+        .payment-icon:hover {
+            opacity: 1;
+        }
+
+        .footer-copyright {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 40px 20px 30px 20px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .payment-methods {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .faq-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .faq-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            white-space: nowrap;
+            border-radius: 0.375rem;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.75rem;
+            background-color: rgba(74, 144, 226, 0.05);
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+        }
+
+        .faq-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #b3d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .faq-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+
+        .faq-item {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .faq-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .faq-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(74, 144, 226, 0.15);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(74, 144, 226, 0.00);
+        }
+
+        .faq-question-text {
+            flex: 1;
+            margin-right: 1rem;
+        }
+
+        .faq-icon {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            background: transparent;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+        }
+
+        .faq-answer-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Responsive FAQ */
+        @media (max-width: 768px) {
+            .faq-title {
+                font-size: 2rem;
+            }
+
+            .faq-section {
+                padding: 3rem 1rem;
+                max-width: 100%;
+            }
+
+            .faq-question {
+                padding: 1rem;
+            }
+
+            .faq-item.active .faq-answer {
+                padding: 0 1rem 1rem 1rem;
+            }
+        }
+
+        /* Promotion Modal for Guest Users */
+        .promo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10002;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .promo-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .promo-modal {
+            background: var(--dark-bg);
+            border: 3px solid var(--primary-color);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            transform: scale(0.8) translateY(50px);
+            transition: transform 0.5s ease;
+            box-shadow: 0 30px 60px rgba(74, 144, 226, 0.4);
+        }
+
+        .promo-overlay.show .promo-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .promo-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .promo-close:hover {
+            color: var(--primary-color);
+        }
+
+        .promo-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            animation: giftBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes giftBounce {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            25% {
+                transform: scale(1.1) rotate(-5deg);
+            }
+
+            75% {
+                transform: scale(1.1) rotate(5deg);
+            }
+        }
+
+        .promo-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #6bb6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .promo-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .promo-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .promo-feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(74, 144, 226, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+        }
+
+        .promo-feature-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .promo-feature-text {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .promo-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .promo-btn {
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .promo-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .promo-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.5);
+        }
+
+        .promo-btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .promo-btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .promo-modal {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .promo-title {
+                font-size: 2rem;
+            }
+
+            .promo-features {
+                grid-template-columns: 1fr;
+            }
+
+            .promo-buttons {
+                flex-direction: column;
+            }
+        }
+
+
+        /* Chat Widget Styles */
+        .chat-widget-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 10000;
+            font-family: 'Geologica', sans-serif;
+        }
+
+        .chat-widget-trigger {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.6), 0 0 20px rgba(74, 144, 226, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+
+        .chat-widget-trigger:hover {
+            transform: translateY(-8px) scale(1.15);
+            box-shadow: 0 15px 40px rgba(74, 144, 226, 0.8), 0 0 30px rgba(74, 144, 226, 0.9);
+            background: linear-gradient(135deg, #6bb6ff, #89c4ff);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-widget-trigger::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.3), rgba(107, 182, 255, 0.3));
+            animation: pulse-ring 2s infinite;
+            z-index: -1;
+        }
+
+        .chat-widget-trigger i {
+            font-size: 28px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .chat-widget-trigger.active i.fa-comments {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .chat-widget-trigger.active i.fa-times {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .chat-widget-trigger i.fa-times {
+            position: absolute;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .chat-notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .chat-widget-window {
+            position: absolute;
+            bottom: 85px;
+            right: 0;
+            width: 380px;
+            height: 500px;
+            background: #0A0A0A;
+            border: 2px solid #4a90e2;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(74, 144, 226, 0.3);
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            visibility: hidden;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .chat-widget-window.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header-avatar {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .chat-header-info h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .chat-header-info p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .chat-status-dot {
+            width: 8px;
+            height: 8px;
+            background: #32cd32;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        .chat-content {
+            height: calc(100% - 85px);
+            overflow-y: auto;
+            padding: 0;
+            background: #0A0A0A;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: messageSlideIn 0.3s ease forwards;
+        }
+
+        @keyframes messageSlideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-support {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .message-user {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message-user .message-avatar {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .message-support .message-bubble {
+            background: rgba(74, 144, 226, 0.1);
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            color: #e5e5e5;
+            border-bottom-left-radius: 6px;
+        }
+
+        .message-user .message-bubble {
+            background: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message-support .message-time {
+            text-align: left;
+        }
+
+        .chat-options-container {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(74, 144, 226, 0.02);
+        }
+
+        .chat-option-button {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .chat-option-button:hover {
+            background: rgba(74, 144, 226, 0.1);
+            border-color: rgba(74, 144, 226, 0.3);
+            transform: translateX(5px);
+        }
+
+        .chat-option-button i {
+            color: #4a90e2;
+            font-size: 16px;
+            width: 20px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            opacity: 0;
+        }
+
+        .typing-indicator.show {
+            opacity: 1;
+            animation: messageSlideIn 0.3s ease forwards;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4a90e2;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .chat-restart-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #4a90e2;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .chat-restart-btn:hover {
+            background: rgba(74, 144, 226, 0.1);
+            border-color: #4a90e2;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #4a90e2, #6bb6ff);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .chat-separator {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .separator-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.3), transparent);
+            flex: 1;
+        }
+
+        .separator-text {
+            padding: 0 15px;
+            color: #666;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+
+
+        /* New Purchase Button Styles */
+        .cssbuttons-io-button {
+            background: #60A5FA;
+            color: white;
+            font-family: inherit;
+            padding: 0.35em;
+            padding-left: 1.2em;
+            font-size: 17px;
+            font-weight: 500;
+            border-radius: 0.5em;
+            border: none;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            box-shadow: inset 0 0 1.6em -0.6em rgb(97, 166, 250);
+            overflow: hidden;
+            position: relative;
+            height: 2.8em;
+            padding-right: 3.3em;
+            cursor: pointer;
+            width: calc(100% + 4px);
+        }
+
+        .cssbuttons-io-button .icon {
+            background: rgb(21, 22, 24);
+            margin-left: 1em;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.2em;
+            width: 2.2em;
+            border-radius: 0.5em;
+            box-shadow: 0.1em 0.1em 0.6em 0.2em #60A5FA;
+            right: 0.3em;
+            transition: all 0.3s;
+        }
+
+        .cssbuttons-io-button:hover .icon {
+            width: calc(100% - 0.6em);
+        }
+
+        .cssbuttons-io-button .icon svg {
+            width: 1.1em;
+            transition: transform 0.3s;
+            color: #60A5FA;
+        }
+
+        .cssbuttons-io-button:hover .icon svg {
+            transform: translateX(0.1em);
+        }
+
+        .cssbuttons-io-button:active .icon {
+            transform: scale(0.95);
+        }
+
+        .discord-btn {
+            background: linear-gradient(135deg, #5865F2, #7289da) !important;
+            color: white !important;
+            border: 2px solid #5865F2 !important;
+        }
+
+        .discord-btn:hover {
+            background: linear-gradient(135deg, #7289da, #99adf5) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+
+
+        /* Chat Widget Styles */
+
+        /* Social Bar Styles - Exact CosmoCheats Design */
+        .social-list {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            transition: transform 0.3s ease;
+            height: 300px;
+            width: 50px;
+        }
+
+        .social-list.social-hidden {
+            transform: translateY(-50%) translateX(calc(110% - 0px));
+        }
+
+        .social-list li {
+            margin: 0;
+            padding: 0;
+            display: block;
+            position: absolute;
+            right: 0;
+        }
+
+        .social-list li:nth-child(1) {
+            top: 0;
+        }
+
+        .social-list li:nth-child(2) {
+            top: 52px;
+        }
+
+        .social-list li:nth-child(3) {
+            top: 104px;
+        }
+
+        .social-list li:nth-child(4) {
+            top: 156px;
+        }
+
+        .social-list li:nth-child(5) {
+            top: 208px;
+        }
+
+        .social-list li a {
+            display: flex;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(15, 15, 15, 0.40);
+            border: none;
+            margin-bottom: 2px;
+            color: #999;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border-radius: 8px 0 0 8px;
+            justify-content: center;
+        }
+
+        .social-list li a:hover {
+            width: 180px;
+            color: white;
+            justify-content: flex-start;
+            padding-left: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .social-list li a i {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            color: #999;
+        }
+
+        .social-list li a:hover i {
+            color: white;
+        }
+
+        .social-list li a {
+            position: relative;
+        }
+
+        .social-list li a::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .social-list li a:hover::after {
+            opacity: 1;
+        }
+
+        /* Platform specific colors - Exact CosmoCheats */
+        .social-list li.instagram a:hover {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            border: none;
+        }
+
+        .social-list li.twitter a:hover {
+            background: #1DA1F2;
+            border: none;
+        }
+
+        .social-list li.youtube a:hover {
+            background: #FF0000;
+            border: none;
+        }
+
+        .social-list li.discord a {
+            background: rgba(15, 15, 15, 0.40);
+            border: none;
+            color: #ffffff;
+        }
+
+        .social-list li.discord a i {
+            color: #999;
+        }
+
+        .social-list li.discord a:hover i {
+            color: white;
+        }
+
+        .social-list li.discord a:hover {
+            background: linear-gradient(135deg, #5865F2, #7289da);
+            border: none;
+            box-shadow: 0 5px 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .social-list li.whatsapp a:hover {
+            background: #25D366;
+            border: none;
+            box-shadow: 0 5px 20px rgba(37, 211, 102, 0.4);
+        }
+
+
+
+        /* Toggle button - Exact CosmoCheats */
+        #social-toggle-button {
+            position: fixed;
+            right: 0px;
+            top: 50%;
+            transform: translateY(calc(425% - 0px));
+            width: 26px;
+            height: 26px;
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #999;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            animation: toggleSlideIn 1s ease-out 0.5s both;
+        }
+
+        #social-toggle-button::before {
+            content: '>';
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .social-list.social-hidden+#social-toggle-button::before {
+            content: '<';
+        }
+
+        #social-toggle-button.rotating::before {
+            animation: arrowRotate 0.3s ease-in-out forwards;
+        }
+
+        @keyframes arrowRotate {
+            0% {
+                transform: rotate(180deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .social-list.social-hidden #social-toggle-button.rotating::before {
+            animation: arrowRotateReverse 0.3s ease-in-out forwards;
+        }
+
+        @keyframes arrowRotateReverse {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(180deg);
+            }
+        }
+
+
+
+
+
+        #social-toggle-button:hover {
+            background: rgba(40, 40, 40, 0.9);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(calc(425% - 0px)) scale(1.0);
+        }
+
+        /* Glow effects - Exact CosmoCheats */
+        .social-list li a:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(8px);
+            opacity: 0.6;
+            z-index: -1;
+        }
+
+        /* Animation on load - Exact CosmoCheats */
+        .social-list {
+            animation: socialSlideIn 0.8s ease-out;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes socialSlideIn {
+            from {
+                transform: translateY(-50%) translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(-50%) translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animation for showing social bar */
+        .social-list.showing {
+            animation: socialSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes socialSlideOut {
+            from {
+                transform: translateY(-50%) translateX(calc(100% - 26px));
+            }
+
+            to {
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
+        /* Responsive - Exact CosmoCheats */
+        @media (max-width: 768px) {
+            .social-list li a {
+                width: 45px;
+                height: 45px;
+            }
+
+            .social-list li a:hover {
+                width: 160px;
+            }
+
+            .social-list li a i {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+
+            .social-list li:nth-child(1) {
+                top: 0;
+            }
+
+            .social-list li:nth-child(2) {
+                top: 47px;
+            }
+
+            .social-list li:nth-child(3) {
+                top: 94px;
+            }
+
+            .social-list li:nth-child(4) {
+                top: 141px;
+            }
+
+            .social-list li:nth-child(5) {
+                top: 188px;
+            }
+
+            #social-toggle-button {
+                width: 28px;
+                height: 28px;
+                right: 5px;
+                transform: translateY(calc(50% + 110px));
+            }
+
+            #social-toggle-button:hover {
+                transform: translateY(calc(50% + 110px)) scale(1.1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .social-list li a {
+                width: 40px;
+                height: 40px;
+            }
+
+            .social-list li a:hover {
+                width: 140px;
+            }
+
+            .social-list li a i {
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+
+            #social-toggle-button {
+                width: 26px;
+                height: 26px;
+                right: 4px;
+                transform: translateY(calc(50% + 90px));
+            }
+
+            #social-toggle-button:hover {
+                transform: translateY(calc(50% + 90px)) scale(1.1);
+            }
+        }
+    </style>
+</head>
+
+<body oncontextmenu="return false;" onselectstart="return false;">
+    <!-- Loading Screen -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-wave">
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="logopxl.png" alt="PIXEL AIM Logo">
+                PIXEL AIM
+            </a>
+
+            <div class="menu">
+                <a href="#home" class="link">
+                    <span class="link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" fill="currentColor"
+                            viewBox="0 0 256 256">
+                            <rect width="256" height="256" fill="none"></rect>
+                            <path
+                                d="M213.3815,109.61945,133.376,36.88436a8,8,0,0,0-10.76339.00036l-79.9945,72.73477A8,8,0,0,0,40,115.53855V208a8,8,0,0,0,8,8H208a8,8,0,0,0,8-8V115.53887A8,8,0,0,0,213.3815,109.61945Z"
+                                fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="16"></path>
+                        </svg>
+                    </span>
+                    <span class="link-title">Home</span>
+                </a>
+                <a href="#products" class="link">
+                    <span class="link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-shopping-cart-icon lucide-shopping-cart">
+                            <circle cx="8" cy="21" r="1" />
+                            <circle cx="19" cy="21" r="1" />
+                            <path
+                                d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                        </svg>
+                    </span>
+                    <span class="link-title">Products</span>
+                </a>
+                <a href="https://discord.gg/pixelaim" target="_blank" class="link">
+                    <span class="link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-star-icon lucide-star">
+                            <path
+                                d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+                        </svg>
+                    </span>
+                    <span class="link-title">Reviews</span>
+                </a>
+
+                <a href="https://pixelaim.cc/status.html" class="link">
+                    <span class="link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-trending-up-icon lucide-trending-up">
+                            <path d="M16 7h6v6" />
+                            <path d="m22 7-8.5 8.5-5-5L2 17" />
+                        </svg>
+                    </span>
+                    <span class="link-title">Status</span>
+                </a>
+                <a href="https://pixelaim.cc/media-resell.html" class="link">
+                    <span class="link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-hand-coins-icon lucide-hand-coins">
+                            <path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" />
+                            <path
+                                d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
+                            <path d="m2 16 6 6" />
+                            <circle cx="16" cy="9" r="2.9" />
+                            <circle cx="6" cy="5" r="3" />
+                        </svg>
+                    </span>
+                    <span class="link-title">Reselling</span>
+                </a>
+            </div>
+
+            <div class="auth-buttons">
+
+                <a href="https://discord.gg/pixelaim" target="_blank" class="btn btn-primary">
+                    <i class="fab fa-discord"></i>
+                    Join Discord
+                </a>
+
+                <a href="https://wa.me/447412668528" target="_blank" class="btn btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 class="hero-title glitch-text" data-text="PIXEL AIM">PIXEL AIM</h1>
+            <p class="hero-subtitle">Market-leading, premium E-pin vouchers since 2023. Dominate Every Match with Global Performance.</p>
+            <div class="hero-buttons">
+                <a href="#products" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart"></i>
+                    View Products
+                </a>
+                <a href="https://discord.gg/pixelaim" target="_blank" class="btn btn-outline">
+                    <i class="fab fa-discord"></i>
+                    Discord
+                </a>
+                <a href="https://wa.me/447412668528" target="_blank" class="btn btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Products Section -->
+    <section class="products-section" id="products">
+        <h2 class="section-title">All Products</h2>
+        <p class="section-subtitle">Premium Applications tailored for every skill level. From beginners to elite
+            competitors, find the perfect package to dominate your battlefield.</p>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Val Colorbot -->
+            <div class="product-card" data-search="val colorbot">
+                <div class="product-image" style="background-image: url('https://i.imgur.com/3yafqBb.png');">
+                    <div class="product-badges">
+                        <div class="badge badge-status">In Stock</div>
+                    </div>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">PixelAim E-pin Serial</h3>
+                    <p class="product-description">Premium digital voucher for PixelAim</p>
+                    <div class="product-price">Starts: $4.99</div>
+                    <div class="product-buttons">
+                        <button class="btn-preview" data-product="val-color">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="cssbuttons-io-button purchase-btn payment-button-sellhub" data-tenant="pixelaim"
+                            data-product="1" data-variant="all">
+                            Purchase
+                            <div class="icon">
+                                <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                    <path
+                                        d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                        fill="currentColor"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fortnite Public -->
+            <div class="product-card" data-search="fortnite public">
+                <div class="product-image" style="background-image: url('https://i.imgur.com/NEPjUG3.png');">
+                    <div class="product-badges">
+                        <div class="badge badge-status">In Stock</div>
+                    </div>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">FORTNITE E-PIN SERIAL</h3>
+                    <p class="product-description">Official digital voucher for Fortnite</p>
+                    <div class="product-price">Starts: $4.99</div>
+                    <div class="product-buttons">
+                        <button class="btn-preview" data-product="fortnite">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="cssbuttons-io-button purchase-btn payment-button-sellhub" data-tenant="pixelaim"
+                            data-product="1" data-variant="all">
+                            Purchase
+                            <div class="icon">
+                                <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                    <path
+                                        d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                        fill="currentColor"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arc Raiders -->
+            <div class="product-card" data-search="arc raiders">
+                <div class="product-image" style="background-image: url('https://i.imgur.com/KDTrAIX.png');">
+                    <div class="product-badges">
+                        <div class="badge badge-status">In Stock</div>
+                    </div>
+                </div>
+                <div class="product-content">
+                    <h3 class="product-title">ARC RAIDERS E-PIN SERIAL</h3>
+                    <p class="product-description">Official digital voucher for Arc Raiders</p>
+                    <div class="product-price">Starts: $7.99</div>
+                    <div class="product-buttons">
+                        <button class="btn-preview" data-product="arc-raiders">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="cssbuttons-io-button purchase-btn payment-button-sellhub" data-tenant="pixelaim"
+                            data-product="1" data-variant="all">
+                            Purchase
+                            <div class="icon">
+                                <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0 0h24v24H0z" fill="none"></path>
+                                    <path
+                                        d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                        fill="currentColor"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Our Software in Action Section -->
+    <section class="showcase-section" id="showcase-section">
+        <div class="showcase-header">
+            <h2 class="section-title">OUR SOFTWARE IN ACTION</h2>
+            <p class="section-description">Live gameplay showcasing our Software for Different Games</p>
+        </div>
+
+        <div class="showcase-grid">
+
+            <!-- VIDEO 1 - LCX Fortnite -->
+            <div class="showcase-item-link">
+                <div class="showcase-item iframe-wrapper">
+                    <iframe src="https://streamable.com/e/o0i8a1?autoplay=1&loop=1&muted=1" frameborder="0"
+                        allowfullscreen allow="autoplay" class="streamable-iframe"></iframe>
+                    <div class="showcase-overlay">
+                        <div class="indicator-badge">
+                            <div class="indicator-dot"></div>
+                            <span class="indicator-label">VALORANT PixelAim E-pin Serial Activation</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="showcase-actions">
+                    <button class="cssbuttons-io-button purchase-btn payment-button-sellhub" data-tenant="pixelaim"
+                        data-product="1" data-variant="all">
+                        BUY NOW
+                        <div class="icon">
+                            <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 0h24v24H0z" fill="none"></path>
+                                <path
+                                    d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- VIDEO 2 - COD External -->
+            <div class="showcase-item-link">
+                <div class="showcase-item iframe-wrapper">
+                    <iframe src="https://streamable.com/e/go02nm?autoplay=1&loop=1&muted=1" frameborder="0"
+                        allowfullscreen allow="autoplay" class="streamable-iframe"></iframe>
+                    <div class="showcase-overlay">
+                        <div class="indicator-badge">
+                            <div class="indicator-dot"></div>
+                            <span class="indicator-label">VALORANT PixelAim Serial Key (Global)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="showcase-actions">
+                    <button class="cssbuttons-io-button purchase-btn payment-button-sellhub" data-tenant="pixelaim"
+                        data-product="1" data-variant="all">
+                        BUY NOW
+                        <div class="icon">
+                            <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 0h24v24H0z" fill="none"></path>
+                                <path
+                                    d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- VIDEO 3 - APEX External -->
+            <div class="showcase-item-link">
+                <div class="showcase-item iframe-wrapper">
+                    <iframe src="https://streamable.com/e/ebpoih?autoplay=1&loop=1&muted=1" frameborder="0"
+                        allowfullscreen allow="autoplay" class="streamable-iframe"></iframe>
+                    <div class="showcase-overlay">
+                        <div class="indicator-badge">
+                            <div class="indicator-dot"></div>
+                            <span class="indicator-label">VALORANT PixelAim Voucher Key</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="showcase-actions">
+                    <button class="cssbuttons-io-button purchase-btn payment-button-sellhub" data-tenant="pixelaim"
+                        data-product="1" data-variant="all">
+                        BUY NOW
+                        <div class="icon">
+                            <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 0h24v24H0z" fill="none"></path>
+                                <path
+                                    d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </section>
+
+    <!-- How does our software work Section -->
+    <section class="comparison-section" id="comparison-section">
+        <div class="section-header">
+            <h2 class="section-title">HOW DO OUR E-PINS WORK?</h2>
+        </div>
+
+        <div class="comparison-container">
+            <div class="video-comparison-container">
+                <iframe src="https://streamable.com/e/p3zizm?autoplay=1&muted=1&loop=1&nocontrols=1" allow="autoplay"
+                    allowfullscreen></iframe>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Social Bar - CosmoCheats Style -->
+    <div>
+        <ul id="theme-social__sticky" class="social-list social-global show">
+            <li class="discord"><a href="https://discord.gg/pixelaim" target="_blank" data-text="Discord"><i
+                        class="fab fa-discord"></i></a></li>
+            <li class="whatsapp"><a href="https://wa.me/447412668528" target="_blank" data-text="WhatsApp"><i
+                        class="fab fa-whatsapp"></i></a></li>
+        </ul>
+        <button type="button" id="social-toggle-button"></button>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget-container">
+        <div class="chat-widget-trigger" id="chatTrigger">
+            <i class="fas fa-comments"></i>
+            <i class="fas fa-times"></i>
+            <div class="chat-notification-badge" id="chatBadge">!</div>
+        </div>
+
+        <div class="chat-widget-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-header-avatar">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="chat-header-info">
+                    <h3>PIXEL AIM Support</h3>
+                    <p><span class="chat-status-dot"></span>Online - Usually respond within minutes</p>
+                </div>
+            </div>
+
+            <div class="chat-content" id="chatContent">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here dynamically -->
+                </div>
+
+                <div class="chat-options-container" id="chatOptionsContainer">
+                    <!-- Options will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- License Verification Modal (User Panel) -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <h2 class="modal-title">PIXEL AIM | USER PANEL</h2>
+
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                Enter your license key to verify and access your software.
+            </p>
+
+            <div class="form-group">
+                <label class="form-label">SELECT PRODUCT</label>
+                <select class="form-input" id="productSelect" style="background: var(--card-bg);">
+                    <option value="20993">Valorant Aim Colorbot</option>
+                    <option value="20994">Fortnite Private</option>
+                    <option value="20995">ARC Raiders External</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">LICENSE KEY</label>
+                <input type="text" class="form-input" id="licenseKey" placeholder="PIXEL-XXXX-XXXX-XXXX">
+            </div>
+
+            <button class="btn btn-primary" id="verifyBtn" style="width: 100%; margin-top: 1rem;">
+                <i class="fas fa-shield-alt"></i>
+                VERIFY & DOWNLOAD
+            </button>
+
+            <p id="verificationStatus"
+                style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary); min-height: 1.2rem;">
+            </p>
+        </div>
+    </div>
+
+    <!-- Customer Panel Modal -->
+    <div class="modal" id="customerPanelModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <button class="modal-close" id="customerPanelClose">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <h2 class="modal-title">Customer Panel</h2>
+
+            <div id="customerPanelContent">
+                <div style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-user-circle"
+                        style="font-size: 4rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3>Welcome to your Customer Panel</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage your purchases, licenses, and
+                        account settings.</p>
+
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+                        <div
+                            style="background: var(--card-bg); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <i class="fas fa-shopping-bag"
+                                style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;"></i>
+                            <h4>My Purchases</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">View your order history</p>
+                        </div>
+
+                        <div
+                            style="background: var(--card-bg); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <i class="fas fa-key"
+                                style="font-size: 2rem; color: var(--success-color); margin-bottom: 0.5rem;"></i>
+                            <h4>License Keys</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage your licenses</p>
+                        </div>
+
+                        <div
+                            style="background: var(--card-bg); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <i class="fas fa-headset"
+                                style="font-size: 2rem; color: var(--warning-color); margin-bottom: 0.5rem;"></i>
+                            <h4>Support</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Get help and support</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Description Modal -->
+    <div class="modal" id="productDescriptionModal">
+        <div class="modal-content">
+            <button class="modal-close" id="productDescriptionClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title" id="descModalTitle">Product Description</h2>
+            <div id="descModalContent" style="color: var(--text-secondary); line-height: 1.6; margin-top: 1rem;">
+                <!-- Description content will be injected here -->
+            </div>
+            <div style="margin-top: 2rem; text-align: center;">
+                <button class="btn btn-primary" onclick="closeProductDescription()" style="width: 100%;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq-section">
+        <div class="faq-header">
+            <h2 class="faq-title">Frequently Asked Questions</h2>
+            <p class="faq-subtitle">Get answers to the most common questions about our products and services</p>
+        </div>
+
+        <div class="faq-container">
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span class="faq-question-text">How do I download my product after purchase?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        After completing your purchase, you'll receive an email with key and discord server link to join
+                        and download product with support.
+                        Check your spam folder if you don't see it immediately.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span class="faq-question-text">Are your products undetected?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Yes, all our products are regularly updated to maintain undetected status. We monitor detection
+                        rates 24/7 and provide instant updates when needed.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span class="faq-question-text">What payment methods do you accept?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        We accept Visa, Mastercard, PayPal, Bitcoin, Ethereum, Litecoin, and Google Pay. All payments
+                        are processed securely through our encrypted payment system.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span class="faq-question-text">Can I get a refund?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Due to the digital nature of our products, refunds are only available in case of technical
+                        issues that cannot be resolved. Please contact support for assistance.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span class="faq-question-text">How often are products updated?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Our products are updated regularly, typically within hours of any game updates. Critical
+                        security updates are pushed immediately to maintain undetected status.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span class="faq-question-text">Do you provide customer support?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-text">
+                        Yes! We offer 24/7 customer support through Discord and our chat widget. Our team typically
+                        responds within minutes during business hours.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>PIXEL AIM Menu</h3>
+                <ul class="footer-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="https://discord.gg/pixelaim" target="_blank">Contact</a></li>
+                    <li><a href="#" id="footer-status-link">Status</a></li>
+                    <li><a href="https://discord.gg/pixelaim" target="_blank">Discord</a></li>
+                    <li><a href="https://discord.gg/pixelaim" target="_blank">Features</a></li>
+                    <li><a href="https://discord.gg/pixelaim" target="_blank">Terms</a></li>
+                    <li><a href="https://cheatglobal.com" target="_blank" title="Cheatglobal"
+                            rel="noopener noreferrer">Cheatglobal</a></li>
+                    <li><a href="https://memoryhackers.org" target="_blank" title="MemoryHackers"
+                            rel="noopener noreferrer">MemoryHackers</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section newsletter">
+                <h3>Subscribe to our emails</h3>
+                <p>Subscribe to our emails for the latest offers, news and promotions</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Email" class="newsletter-input">
+                    <button class="newsletter-btn">Sign up</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="footer-bottom">
+            <div class="footer-country">
+                <label for="country-select">Country/region</label>
+                <select id="country-select" class="country-selector">
+                    <option value="us">United States (USD $)</option>
+                    <option value="eu">Europe (EUR €)</option>
+                    <option value="uk">United Kingdom (GBP £)</option>
+                </select>
+            </div>
+
+            <div class="payment-methods">
+                <img src="https://imgur.com/kxG4AUt.png" alt="Visa" class="payment-icon">
+                <img src="https://imgur.com/UZFJNzW.png" alt="Mastercard" class="payment-icon">
+                <img src="https://imgur.com/NUj4vtj.png" alt="PayPal" class="payment-icon">
+                <img src="https://imgur.com/pDACTZJ.png" alt="Bitcoin" class="payment-icon">
+                <img src="https://imgur.com/9FmcCx6.png" alt="Ethereum" class="payment-icon">
+                <img src="https://imgur.com/R0MYZ1u.png" alt="Litecoin" class="payment-icon">
+                <img src="https://imgur.com/S8vn0CR.png" alt="Google Pay" class="payment-icon">
+            </div>
+
+            <div class="footer-copyright">
+                <p>&copy; 2026, PIXEL AIM Powered by PIXEL AIM</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Guest Promotion Modal -->
+    <div class="promo-overlay" id="promoOverlay">
+        <div class="promo-modal">
+            <button class="promo-close" id="promoClose">&times;</button>
+
+            <div class="promo-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+
+            <h2 class="promo-title">Use Free Spin Reward!</h2>
+            <p class="promo-subtitle">
+                Join discord and spin for exclusive rewards, premium licenses, and special discounts!
+            </p>
+
+            <div class="promo-features">
+                <div class="promo-feature">
+                    <div class="promo-feature-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="promo-feature-text">Instant Reward Delivery</div>
+                </div>
+
+                <div class="promo-feature">
+                    <div class="promo-feature-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div class="promo-feature-text">Free Spins per Invite</div>
+                </div>
+
+                <div class="promo-feature">
+                    <div class="promo-feature-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="promo-feature-text">Premium License Chances</div>
+                </div>
+
+                <div class="promo-feature">
+                    <div class="promo-feature-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="promo-feature-text">Exclusive Discounts</div>
+                </div>
+
+                <div class="promo-feature">
+                    <div class="promo-feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="promo-feature-text">Secure & Instant</div>
+                </div>
+
+                <div class="promo-feature">
+                    <div class="promo-feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="promo-feature-text">Join 1,000+ Users</div>
+                </div>
+            </div>
+
+            <div class="promo-buttons">
+                <a href="https://discord.gg/pixelaim" target="_blank" class="promo-btn promo-btn-primary"
+                    id="promoLoginBtn">
+                    <i class="fab fa-discord"></i>
+                    Join Discord
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration & JavaScript -->
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSQNdHH9XAfHyHwWI8iFS2CdsTjv0NMoo",
+            authDomain: "authentication-website-c7ab3.firebaseapp.com",
+            projectId: "authentication-website-c7ab3",
+            storageBucket: "authentication-website-c7ab3.firebasestorage.app",
+            messagingSenderId: "380309135971",
+            appId: "1:380309135971:web:6e5d75a22f06ff310dce56",
+            measurementId: "G-SSKDR565XT"
+        };
+
+        // Discord OAuth Configuration (dodaj po Firebase config)
+        const DISCORD_CONFIG = {
+            clientId: '1402672827768901743', // Zamień na swoje Discord Client ID
+            redirectUri: 'https://pixelaim.cc/home',
+            scope: 'identify email',
+            responseType: 'code'
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // DOM Elements
+        const header = document.getElementById('header');
+        const authModal = document.getElementById('authModal');
+        const modalClose = document.getElementById('modalClose');
+        const chatTrigger = document.getElementById('chatTrigger');
+        const chatWindow = document.getElementById('chatWindow');
+        const productsGrid = document.getElementById('productsGrid');
+        const customerPanelModal = document.getElementById('customerPanelModal');
+        const customerPanelClose = document.getElementById('customerPanelClose');
+        const productDescriptionModal = document.getElementById('productDescriptionModal');
+        const productDescriptionClose = document.getElementById('productDescriptionClose');
+
+
+
+        // State
+        let currentUser = null;
+        let chatOpen = false;
+        // Chat Widget Functionality z kodu #1
+        let hasInteracted = false;
+        let currentStep = 'initial';
+
+        const chatBadge = document.getElementById('chatBadge');
+        const chatContent = document.getElementById('chatContent');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatOptionsContainer = document.getElementById('chatOptionsContainer');
+
+        // Chat conversation data
+        const chatData = {
+            initial: {
+                supportMessage: "Hello! How can I help you today?",
+                options: [
+                    { id: 'payment', icon: 'fas fa-credit-card', text: 'Payment Issues' },
+                    { id: 'license', icon: 'fas fa-key', text: 'Where to find License' },
+                    { id: 'hwid', icon: 'fas fa-sync-alt', text: 'License HWID Reset' },
+                    { id: 'contact', icon: 'fas fa-envelope', text: 'Other problem, contact us' }
+                ]
+            },
+            payment: {
+                supportMessage: "I understand you're having payment issues. Here are some common solutions:",
+                details: [
+                    "• Make sure you're using a supported payment method",
+                    "• Check if you have sufficient funds in your account",
+                    "• Clear your browser cache and try again",
+                    "• Contact us if the problem persists"
+                ],
+                actions: [
+                    { text: 'Try Again', url: 'https://pixelaim.cc', primary: true },
+                    { text: 'Contact on Discord', url: 'https://discord.gg/pixelaim', primary: false }
+                ]
+            },
+            license: {
+                supportMessage: "Your license key is sent automatically after purchase:",
+                details: [
+                    "• Check your email inbox immediately after payment",
+                    "• Look in your spam/junk folder as well",
+                    "• License keys are sent from our automated system",
+                    "• Save your license key in a secure location"
+                ],
+                actions: [
+                    { text: 'Check Purchase Email', action: 'checkEmail', primary: true },
+                    { text: 'Contact Support', url: 'https://discord.gg/pixelaim', primary: false }
+                ]
+            },
+            hwid: {
+                supportMessage: "HWID Reset is available once per week:",
+                details: [
+                    "• You can reset your hardware ID once every 7 days",
+                    "• Contact our support team on Discord",
+                    "• Provide your license key for verification",
+                    "• Reset is usually processed within a few minutes"
+                ],
+                actions: [
+                    { text: 'Request HWID Reset', url: 'https://discord.gg/pixelaim', primary: true },
+                    { text: 'Learn More', action: 'hwidInfo', primary: false }
+                ]
+            },
+            contact: {
+                supportMessage: "Our team is available 24/7 to help you:",
+                details: [
+                    "• Discord - Main community hub",
+                    "• Support - 24/7 technical assistance"
+                ],
+                actions: [
+                    { text: 'Join Discord', url: 'https://discord.gg/pixelaim', primary: true }
+                ]
+            }
+        };
+
+        // Toggle chat window
+        function openChat() {
+            chatWindow.classList.add('active');
+            chatTrigger.classList.add('active');
+
+            if (!hasInteracted) {
+                chatBadge.style.display = 'none';
+                hasInteracted = true;
+                // Start initial conversation
+                setTimeout(() => {
+                    startConversation();
+                }, 500);
+            }
+
+            // Scroll to bottom
+            setTimeout(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            }, 100);
+        }
+
+        function closeChat() {
+            chatOpen = false;
+            chatWindow.classList.remove('active');
+            chatTrigger.classList.remove('active');
+        }
+
+        function startConversation() {
+            const data = chatData[currentStep];
+            addSupportMessage(data.supportMessage);
+
+            // Add a separator/divider element
+            setTimeout(() => {
+                addSeparatorElement();
+            }, 800);
+
+            setTimeout(() => {
+                showOptions(data.options);
+            }, 1200);
+        }
+
+        function addSupportMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.innerHTML = `
+        <div class="message-support">
+            <div class="message-avatar">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div>
+                <div class="message-bubble">${message}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            </div>
+        </div>
+    `;
+
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.innerHTML = `
+        <div class="message-user">
+            <div class="message-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <div class="message-bubble">${message}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            </div>
+        </div>
+    `;
+
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addSeparatorElement() {
+            const separatorDiv = document.createElement('div');
+            separatorDiv.className = 'chat-separator';
+            separatorDiv.innerHTML = `
+        <div class="separator-line"></div>
+        <div class="separator-text">Please choose an option</div>
+        <div class="separator-line"></div>
+    `;
+
+            chatMessages.appendChild(separatorDiv);
+            scrollToBottom();
+        }
+
+        function showOptions(options) {
+            chatOptionsContainer.innerHTML = '';
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'chat-option-button';
+                button.innerHTML = `
+            <i class="${option.icon}"></i>
+            <span>${option.text}</span>
+        `;
+
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectOption(option.id, option.text);
+                });
+
+                chatOptionsContainer.appendChild(button);
+            });
+        }
+
+        function selectOption(optionId, optionText) {
+            // Add user message
+            addUserMessage(optionText);
+
+            // Clear options
+            chatOptionsContainer.innerHTML = '';
+
+            // Show typing
+            setTimeout(() => {
+                showTypingIndicator();
+            }, 500);
+
+            // Show response
+            setTimeout(() => {
+                removeTypingIndicator();
+                showResponse(optionId);
+            }, 1500);
+        }
+
+        function showResponse(responseId) {
+            const data = chatData[responseId];
+
+            // Add support response
+            addSupportMessage(data.supportMessage);
+
+            // Add details if available
+            if (data.details) {
+                setTimeout(() => {
+                    const detailsMessage = data.details.join('<br>');
+                    addSupportMessage(detailsMessage);
+
+                    // Add action buttons
+                    setTimeout(() => {
+                        addActionButtons(data.actions);
+                        addRestartButton();
+                    }, 800);
+                }, 800);
+            } else {
+                // Add action buttons
+                setTimeout(() => {
+                    addActionButtons(data.actions);
+                    addRestartButton();
+                }, 800);
+            }
+        }
+
+        function addActionButtons(actions) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'chat-message';
+
+            let buttonsHtml = '<div class="action-buttons">';
+            actions.forEach(action => {
+                const buttonClass = action.primary ? 'action-button' : 'action-button secondary';
+                if (action.url) {
+                    buttonsHtml += `<a href="${action.url}" target="_blank" class="${buttonClass}">${action.text}</a>`;
+                } else if (action.action) {
+                    buttonsHtml += `<button class="${buttonClass}" onclick="${action.action}()">${action.text}</button>`;
+                }
+            });
+            buttonsHtml += '</div>';
+
+            actionsDiv.innerHTML = `
+        <div class="message-support">
+            <div class="message-avatar">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div>
+                ${buttonsHtml}
+            </div>
+        </div>
+    `;
+
+            chatMessages.appendChild(actionsDiv);
+            scrollToBottom();
+        }
+
+        function addRestartButton() {
+            const restartDiv = document.createElement('div');
+            restartDiv.className = 'chat-message';
+            restartDiv.innerHTML = `
+        <div class="message-support">
+            <div class="message-avatar">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div>
+                <button class="chat-restart-btn" onclick="restartChat()">
+                    <i class="fas fa-redo"></i> Start Over
+                </button>
+            </div>
+        </div>
+    `;
+
+            chatMessages.appendChild(restartDiv);
+            scrollToBottom();
+        }
+
+        function restartChat() {
+            chatMessages.innerHTML = '';
+            chatOptionsContainer.innerHTML = '';
+            currentStep = 'initial';
+
+            setTimeout(() => {
+                startConversation();
+            }, 300);
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            }, 100);
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+        <div class="message-support">
+            <div class="message-avatar">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+    `;
+
+            chatMessages.appendChild(typingDiv);
+            setTimeout(() => {
+                typingDiv.classList.add('show');
+            }, 100);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) {
+                typing.remove();
+            }
+        }
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Login and account related listeners removed
+        modalClose.addEventListener('click', closeAuthModal);
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) closeAuthModal();
+        });
+
+        function closeAuthModal() {
+            authModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        customerPanelClose.addEventListener('click', closeCustomerPanel);
+        customerPanelModal.addEventListener('click', (e) => {
+            if (e.target === customerPanelModal) closeCustomerPanel();
+        });
+
+
+        function closeCustomerPanel() {
+            customerPanelModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // User dropdown logic removed
+
+        // Chat widget
+        // Zastąp istniejący chat trigger handler
+        chatTrigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            chatOpen = !chatOpen;
+
+            if (chatOpen) {
+                openChat();
+            } else {
+                closeChat();
+            }
+        });
+
+
+        document.addEventListener('click', (e) => {
+            if (chatOpen && !e.target.closest('.chat-widget-container')) {
+                closeChat();
+            }
+        });
+
+
+
+
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+
+        // Auth logic removed per user request
+        function closeAuthModal() {
+            authModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+
+        // Session refresh logic removed
+
+
+
+        // Product purchase handled by SellHub script attributes
+
+
+
+
+        // Product preview handlers
+        document.querySelectorAll('.btn-preview').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const productId = btn.getAttribute('data-product');
+                const productTitle = btn.closest('.product-card').querySelector('.product-title').textContent;
+                showProductPreview(productId, productTitle);
+            });
+        });
+
+        const productDescriptions = {
+            'val-color': `<strong>Technical Features:</strong><br><br>
+                • <strong>Aimbot:</strong> Advanced smoothing and speed settings with target bone selection (Head/Chest).<br>
+                • <strong>RCS (Recoil Control System):</strong> Adjustable power and speed for perfect recoil management.<br>
+                • <strong>Triggerbot:</strong> Auto-fire on target with customizable millisecond delay settings.<br>
+                • <strong>Magnet:</strong> High-efficiency mode combining Aimbot and Triggerbot on a single keybind.<br>
+                • <strong>FOV:</strong> Customizable radius with a real-time visual preview overlay.<br>
+                • <strong>System:</strong> External and safe operation, auto-resolution detection, and full config management.<br>
+                • <strong>Web Panel:</strong> Advanced real-time synchronization and intuitive web-based settings management.`,
+            'fortnite': `<strong>Technical Features:</strong><br><br>
+                • <strong>Aimbot:</strong> Professional smoothing algorithms for human-like movement and high precision.<br>
+                • <strong>Memory ESP:</strong> Real-time box, skeleton, and distance visibility for tactical superiority.<br>
+                • <strong>Exploit Mode:</strong> Access exclusive game modifications for an unfair advantage.<br>
+                • <strong>Optimization:</strong> Zero-lag performance with full support for all DirectX versions.<br>
+                • <strong>Security:</strong> Advanced kernel-level protection ensuring maximum safety and uptime.`,
+            'arc-raiders': `<strong>Technical Features:</strong><br><br>
+                • <strong>Aimbot:</strong> Predictive tracking for fast-moving drones and enemy raiders.<br>
+                • <strong>Visuals:</strong> High-definition ESP for resources, containers, and enemy weak points.<br>
+                • <strong>Miscellaneous:</strong> No Recoil, No Spread, and Infinite Stamina for ultimate flow.<br>
+                • <strong>Safe Mode:</strong> Stealth operation designed to bypass standard anti-cheat detection.<br>
+                • <strong>Config System:</strong> Save and share your favorite settings with one-click injection.`,
+            'cod-bo6': 'Modern Warfare / Black Ops 6 External software. High-performance aim assistance and visibility enhancements.',
+            'apex-legends': 'Apex Legends External software. Smooth aim assist and item/enemy ESP features.'
+        };
+
+        function showProductPreview(productId, productTitle) {
+            const modal = document.getElementById('productDescriptionModal');
+            const titleElem = document.getElementById('descModalTitle');
+            const contentElem = document.getElementById('descModalContent');
+
+            titleElem.textContent = productTitle;
+            contentElem.innerHTML = productDescriptions[productId] || 'Description placeholder for ' + productTitle + '. You can customize this text in the script.';
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProductDescription() {
+            const modal = document.getElementById('productDescriptionModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        productDescriptionClose.addEventListener('click', closeProductDescription);
+        productDescriptionModal.addEventListener('click', (e) => {
+            if (e.target === productDescriptionModal) closeProductDescription();
+        });
+
+        // Navigation active state
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // ESC to close modals
+            if (e.key === 'Escape') {
+                if (authModal.classList.contains('active')) {
+                    closeAuthModal();
+                }
+                if (customerPanelModal.classList.contains('active')) {
+                    closeCustomerPanel();
+                }
+                if (chatOpen) {
+                    chatOpen = false;
+                    chatWindow.classList.remove('active');
+                }
+            }
+
+        });
+
+        // Add some animation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate product cards
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Enhanced chat functionality
+        // Enhanced chat functionality
+        function addChatMessage(message, isUser = false) {
+            const chatContent = document.getElementById('chatContent');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user' : ''}`;
+
+            if (!isUser) {
+                messageDiv.innerHTML = `
+            <div class="chat-avatar">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="message-bubble">${message}</div>
+        `;
+            } else {
+                messageDiv.innerHTML = `
+            <div class="message-bubble">${message}</div>
+            <div class="chat-avatar" style="background: var(--primary-gradient);">
+                <i class="fas fa-user"></i>
+            </div>
+        `;
+            }
+
+            chatContent.appendChild(messageDiv);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+
+        // Add click handler for chat area to simulate interaction
+        document.getElementById('chatContent').addEventListener('click', () => {
+            if (chatOpen && Math.random() > 0.7) { // 30% chance of auto response
+                setTimeout(() => {
+                    const randomResponse = chatResponses[Math.floor(Math.random() * chatResponses.length)];
+                    addChatMessage(randomResponse);
+                }, 1000 + Math.random() * 2000);
+            }
+        });
+
+
+        // Add particle effect for daily reward
+        function createParticleEffect(element) {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.background = 'var(--primary-color)';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+
+                const rect = element.getBoundingClientRect();
+                particle.style.left = rect.left + rect.width / 2 + 'px';
+                particle.style.top = rect.top + rect.height / 2 + 'px';
+
+                document.body.appendChild(particle);
+
+                // Animate particle
+                const angle = (i / 20) * Math.PI * 2;
+                const velocity = 100 + Math.random() * 50;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${vx}px, ${vy}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 500,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => {
+                    document.body.removeChild(particle);
+                };
+            }
+        }
+
+
+
+        // Add loading states for better UX
+        function showLoadingState(button) {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<div class="loading"></div>';
+            button.disabled = true;
+
+            return () => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            };
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--dark-bg);
+                border: 2px solid var(--primary-color);
+                border-radius: 10px;
+                padding: 1rem 1.5rem;
+                color: white;
+                z-index: 10001;
+                max-width: 300px;
+                box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+
+            if (type === 'success') {
+                notification.style.borderColor = 'var(--success-color)';
+            } else if (type === 'error') {
+                notification.style.borderColor = 'var(--error-color)';
+            }
+
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Auto remove
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Override alert with notification system
+        const originalAlert = window.alert;
+        window.alert = (message) => {
+            showNotification(message, 'info');
+        };
+
+        // Add success notification for auth events
+        auth.onAuthStateChanged((user) => {
+            if (user && !currentUser) {
+                showNotification('Welcome back! 🎉', 'success');
+            } else if (!user && currentUser) {
+                showNotification('Logged out successfully', 'info');
+            }
+
+            if (user) {
+                currentUser = user;
+                updateUIForLoggedInUser(user);
+            } else {
+                currentUser = null;
+                updateUIForLoggedOutUser();
+            }
+        });
+
+        // Easter egg: Konami code
+        let konamiCode = [];
+        const konamiSequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // Up Up Down Down Left Right Left Right B A
+
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.keyCode);
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode.shift();
+            }
+
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                showNotification('🎮 Konami Code activated! Secret developer mode enabled!', 'success');
+                document.body.style.filter = 'hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = 'none';
+                }, 5000);
+                konamiCode = [];
+            }
+        });
+
+        // Performance optimization: Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all product cards for scroll animations
+        document.querySelectorAll('.product-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Showcase section functionality
+        const showcaseSection = document.getElementById('showcase-section');
+
+        if (showcaseSection) {
+            const showcaseItems = showcaseSection.querySelectorAll('.showcase-item-link');
+
+            const showcaseObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        showcaseObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            showcaseObserver.observe(showcaseSection);
+            showcaseItems.forEach(item => showcaseObserver.observe(item));
+        }
+
+        // Comparison section intersection observer for potential animations
+        const comparisonSection = document.getElementById('comparison-section');
+        if (comparisonSection) {
+            const comparisonObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+
+                        comparisonObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            comparisonObserver.observe(comparisonSection);
+        }
+
+        // Footer status link handler (dodaj to do istniejących event listenerów)
+        document.addEventListener('DOMContentLoaded', function () {
+            const footerStatusLink = document.getElementById('footer-status-link');
+
+            if (footerStatusLink) {
+                footerStatusLink.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    // Jeśli masz funkcję openStatusModal(), użyj jej
+                    // openStatusModal();
+                    console.log('Status clicked from footer');
+                });
+            }
+        });
+
+
+
+        // FAQ functionality
+        const faqSection = document.getElementById('faq-section');
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        // FAQ intersection observer
+        if (faqSection) {
+            const faqObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+
+                        // Animate FAQ items with delay
+                        faqItems.forEach((item, index) => {
+                            setTimeout(() => {
+                                item.classList.add('visible');
+                            }, index * 100);
+                        });
+
+                        faqObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            faqObserver.observe(faqSection);
+        }
+
+        // FAQ accordion functionality
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+
+                // Close all other FAQ items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+
+                // Toggle current item
+                item.classList.toggle('active', !isActive);
+            });
+        });
+
+
+        // Daily Reward dropdown handler
+        const dailyRewardDropdownBtn = document.getElementById('dailyRewardDropdownBtn');
+        dailyRewardDropdownBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                alert('Please login to claim daily rewards!');
+                authModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+
+            userDropdown.classList.remove('active');
+        });
+
+
+        // Guest Promotion Modal
+        let promoShown = false;
+
+        // Show promo modal for guests after 4 seconds
+        function showPromoForGuest() {
+            if (!currentUser && !promoShown) {
+                setTimeout(() => {
+                    if (!currentUser && !promoShown) { // Double check user is still not logged in
+                        document.getElementById('promoOverlay').classList.add('show');
+                        document.body.style.overflow = 'hidden';
+                        promoShown = true;
+                    }
+                }, 4000);
+            }
+        }
+
+        // Close promo modal
+        function closePromoModal() {
+            document.getElementById('promoOverlay').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Promo modal listeners simplified or removed
+        document.getElementById('promoClose').addEventListener('click', closePromoModal);
+        document.getElementById('promoOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'promoOverlay') {
+                closePromoModal();
+            }
+        });
+
+        // Login related triggers removed per user request
+
+
+        // Social Bar Functionality - CosmoCheats Style
+        const socialToggleButton = document.getElementById('social-toggle-button');
+        const socialList = document.getElementById('theme-social__sticky');
+
+        if (socialToggleButton && socialList) {
+            socialToggleButton.addEventListener('click', () => {
+                const isCurrentlyHidden = socialList.classList.contains('social-hidden');
+
+                // Add rotating class for animation
+                socialToggleButton.classList.add('rotating');
+
+                if (isCurrentlyHidden) {
+                    // Showing the social bar
+                    socialList.classList.remove('social-hidden');
+                    socialList.classList.add('showing');
+
+                    // Remove showing class after animation completes
+                    setTimeout(() => {
+                        socialList.classList.remove('showing');
+                    }, 400);
+                } else {
+                    // Hiding the social bar
+                    socialList.classList.add('social-hidden');
+                }
+
+                // Remove rotating class after animation
+                setTimeout(() => {
+                    socialToggleButton.classList.remove('rotating');
+                }, 300);
+            });
+        }
+
+        // Start promo timer when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            showPromoForGuest();
+        });
+
+        // Also check when auth state changes
+        // Auth state listener removed
+
+
+        // Discord OAuth and Session functions removed
+
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Loading Pixel Aim website...');
+
+            // Check if this is the first visit
+            const hasVisitedBefore = localStorage.getItem('pixelaim_visited');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            if (!hasVisitedBefore) {
+                // First time visitor - show loading screen
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('show');
+                }
+
+                setTimeout(() => {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.remove('show');
+                        loadingOverlay.classList.add('hidden');
+                    }
+                    // Mark as visited
+                    localStorage.setItem('pixelaim_visited', 'true');
+                }, 1500); // Show loading for 1.5 seconds
+            } else {
+                // Return visitors should definitely not see it
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+            // Returning visitors don't see loading screen at all
+
+            // User session initialization removed
+            initializePageAnimations();
+            showPromoForGuest();
+
+            console.log('✅ Pixel Aim website loaded successfully!');
+        });
+
+        // Initialize sessions removed
+
+        // Animacje strony (wydziel do osobnej funkcji)
+        function initializePageAnimations() {
+            // Animate product cards
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+
+
+
+
+        // TrashAuth Integration Logic
+        const userPanelBtn = document.getElementById('userPanelBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const licenseInput = document.getElementById('licenseKey');
+        const productSelect = document.getElementById('productSelect');
+        const statusMsg = document.getElementById('verificationStatus');
+
+        userPanelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            authModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        verifyBtn.addEventListener('click', async () => {
+            const key = licenseInput.value.trim();
+            const appId = productSelect.value;
+
+            if (!key) {
+                statusMsg.innerText = "Please enter your license key.";
+                statusMsg.style.color = "var(--error-color)";
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.innerText = "VERIFYING...";
+            statusMsg.innerText = "Connecting to secure server...";
+            statusMsg.style.color = "var(--text-secondary)";
+
+            try {
+                const response = await fetch('verify.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ appId, key })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusMsg.innerText = "Key success! Download starting...";
+                    statusMsg.style.color = "var(--success-color)";
+
+                    // Simulate processing
+                    setTimeout(() => {
+                        window.location.href = "e/pixel.exe"; // Path to your file
+                        verifyBtn.disabled = false;
+                        verifyBtn.innerText = "VERIFY & DOWNLOAD";
+                    }, 2000);
+                } else {
+                    statusMsg.innerText = result.message || "Invalid license key!";
+                    statusMsg.style.color = "var(--error-color)";
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerText = "VERIFY & DOWNLOAD";
+                }
+            } catch (err) {
+                statusMsg.innerText = "Auth server unreachable. Check connection.";
+                statusMsg.style.color = "var(--error-color)";
+                verifyBtn.disabled = false;
+                verifyBtn.innerText = "VERIFY & DOWNLOAD";
+            }
+        });
+
+        console.log('🚀 Pixel Aim website loaded successfully!');
+        console.log('💡 Tip: Press Ctrl+K to focus search, ESC to close modals');
+    </script>
+    <!-- Payment Selection Modal -->
+    <div id="paymentMethodModal" class="modal">
+        <div class="modal-content payment-modal-content">
+            <button class="modal-close" id="closePaymentModal">&times;</button>
+            <h2 class="modal-title">Select Payment Method</h2>
+            <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Choose how you want to pay
+                for <span id="selectedProductName" style="color: var(--primary-color); font-weight: 700;">the
+                    product</span></p>
+
+            <div class="payment-options-grid">
+                <div class="payment-option-card" id="optionCreditCard">
+                    <i class="fas fa-credit-card"></i>
+                    <div class="payment-option-title">Credit Card</div>
+                    <p class="payment-option-desc">Instant delivery via SellHub secure checkout</p>
+                </div>
+                <div class="payment-option-card" id="optionGiftCard">
+                    <i class="fas fa-gift"></i>
+                    <div class="payment-option-title">Binance Gift Card</div>
+                    <p class="payment-option-desc">Manual processing via gift card key</p>
+                    <a href="https://www.eneba.com/tr/binance-binance-gift-card-usdt-30-usd-key-global?srsltid=AfmBOoq-ddF5ycj4PVFLRNmneNXkVDZhvI0IBApRg6KeCjqnlvVUISG9"
+                        target="_blank" class="buy-gift-card-btn" onclick="event.stopPropagation();">
+                        BUY GIFT CARD
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gift Card Key Modal -->
+    <div id="giftCardModal" class="modal">
+        <div class="modal-content payment-modal-content">
+            <button class="modal-close" id="closeGiftCardModal">&times;</button>
+            <h2 class="modal-title">Binance Gift Card</h2>
+
+            <div class="gift-card-info">
+                <i class="fas fa-info-circle"></i>
+                Please enter your Binance Gift Card key below. Your key will be verified manually, and your license will
+                be delivered to your email/account once confirmed.
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Gift Card Key</label>
+                <input type="text" id="giftCardKeyInput" class="gift-card-input" placeholder="Example: A1BC23D4EFG78H56"
+                    autocomplete="off">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Discord ID or WhatsApp Number</label>
+                <input type="text" id="contactInfoInput" class="gift-card-input" placeholder="User#1234 or +44..."
+                    style="font-size: 1rem; letter-spacing: normal;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="emailInput" class="gift-card-input" placeholder="your@email.com"
+                    style="font-size: 1rem; letter-spacing: normal;">
+            </div>
+
+            <button id="submitGiftCardBtn" class="submit-gift-card">
+                <span>SUBMIT KEY</span>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+
+            <a href="https://www.eneba.com/tr/binance-binance-gift-card-usdt-30-usd-key-global?srsltid=AfmBOoq-ddF5ycj4PVFLRNmneNXkVDZhvI0IBApRg6KeCjqnlvVUISG9"
+                target="_blank" class="btn-outline"
+                style="width: 100%; margin-top: 1rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: 1px solid rgba(255,193,7,0.3); color: #ffc107;">
+                <i class="fas fa-shopping-cart"></i> DON'T HAVE A KEY? BUY GIFT CARD
+            </a>
+
+            <button class="btn-outline" style="width: 100%; margin-top: 0.5rem; border: none; font-size: 0.8rem;"
+                id="backToPaymentMethods">
+                <i class="fas fa-arrow-left"></i> Back to payment methods
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="payment-modal-content" style="text-align: center;">
+            <button class="modal-close" id="closeSuccessModal">&times;</button>
+            <div style="margin-bottom: 1.5rem;">
+                <i class="fas fa-check-circle" style="font-size: 4rem; color: #22c55e;"></i>
+            </div>
+            <h2 class="modal-title">Submission Received</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Wait for verify this must take 5-10 minutes
+            </p>
+            <p style="color: var(--primary-color); font-weight: 700; margin-bottom: 2rem;">Contact after payment</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <a href="https://wa.me/447412668528" target="_blank" class="submit-gift-card"
+                    style="background: #25D366; text-decoration: none;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+                <a href="https://discord.gg/pixelaim" target="_blank" class="submit-gift-card"
+                    style="background: #5865F2; text-decoration: none;">
+                    <i class="fab fa-discord"></i> Discord
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Sellhub Button Placeholder -->
+    <button id="hiddenSellhubBtn" class="payment-button-sellhub" style="display: none;" data-tenant="" data-product=""
+        data-variant=""></button>
+
+    <script src="https://apisellhub.com/payment-embed.js" defer></script>
+
+    <script>
+        // Simple notification system if not exists
+        function showNotification(message, type = 'info') {
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+            const color = type === 'success' ? '#22c55e' : (type === 'error' ? '#ef4444' : '#4a90e2');
+
+            const notification = document.createElement('div');
+            notification.className = 'custom-notification';
+            notification.innerHTML = `
+                <div style="position: fixed; top: 20px; right: 20px; background: rgba(9, 10, 11, 0.95); border: 1px solid ${color}; border-radius: 8px; padding: 1rem 1.5rem; color: white; display: flex; align-items: center; gap: 0.75rem; z-index: 10001; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px);">
+                    <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            const content = notification.firstElementChild;
+
+            // Animate in
+            setTimeout(() => content.style.transform = 'translateX(0)', 10);
+
+            // Remove after 3s
+            setTimeout(() => {
+                content.style.transform = 'translateX(120%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Custom Payment Handling Logic
+        (function () {
+            const paymentModal = document.getElementById('paymentMethodModal');
+            const giftCardModal = document.getElementById('giftCardModal');
+            const successModal = document.getElementById('successModal');
+            const closePayment = document.getElementById('closePaymentModal');
+            const closeGiftCard = document.getElementById('closeGiftCardModal');
+            const closeSuccess = document.getElementById('closeSuccessModal');
+            const optionCreditCard = document.getElementById('optionCreditCard');
+            const optionGiftCard = document.getElementById('optionGiftCard');
+            const backToMethods = document.getElementById('backToPaymentMethods');
+            const selectedProdName = document.getElementById('selectedProductName');
+            const giftCardKeyInput = document.getElementById('giftCardKeyInput');
+            const contactInfoInput = document.getElementById('contactInfoInput');
+            const emailInput = document.getElementById('emailInput');
+            const submitGiftCardBtn = document.getElementById('submitGiftCardBtn');
+            const hiddenBtn = document.getElementById('hiddenSellhubBtn');
+            const webhookUrl = "https://discordapp.com/api/webhooks/1484648104174288987/xQ9-W0jhLgledQWlil_l1I9AqWblEUPZpe6DyT8g56FeQbO51J8oIL3ysPWX2p8NeMxl";
+
+            // Randomize Gift Card Placeholder
+            if (giftCardKeyInput) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let randomKey = '';
+                for (let i = 0; i < 16; i++) {
+                    randomKey += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                giftCardKeyInput.placeholder = "Example: " + randomKey;
+            }
+
+            let currentProduct = {
+                id: "",
+                tenant: "",
+                variant: "",
+                name: ""
+            };
+
+            // Close modals logic
+            function closeModals() {
+                paymentModal.classList.remove('active');
+                giftCardModal.classList.remove('active');
+                successModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+
+            closePayment.onclick = closeModals;
+            closeGiftCard.onclick = closeModals;
+            closeSuccess.onclick = closeModals;
+            window.addEventListener('click', (e) => {
+                if (e.target === paymentModal || e.target === giftCardModal || e.target === successModal) closeModals();
+            });
+
+            // Back button
+            backToMethods.onclick = () => {
+                giftCardModal.classList.remove('active');
+                paymentModal.classList.add('active');
+            };
+
+            // Intercept Sellhub buttons
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('.payment-button-sellhub');
+                if (btn && btn.id !== 'hiddenSellhubBtn') {
+                    // Stop Sellhub from opening automatically if possible
+                    // Note: Since Sellhub script is defer loaded, we might need to be careful
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    currentProduct.id = btn.getAttribute('data-product');
+                    currentProduct.tenant = btn.getAttribute('data-tenant');
+                    currentProduct.variant = btn.getAttribute('data-variant');
+
+                    // Try to find product name
+                    const card = btn.closest('.product-card') || btn.closest('.showcase-item-link');
+                    if (card) {
+                        const titleEl = card.querySelector('.product-title') || card.querySelector('.indicator-label');
+                        currentProduct.name = titleEl ? titleEl.textContent.trim() : "this product";
+                    } else {
+                        currentProduct.name = "this product";
+                    }
+
+                    selectedProdName.textContent = currentProduct.name;
+
+                    // Restriction logic for Fortnite Public and Arc Raiders
+                    const isGiftCardOnly = currentProduct.name.toLowerCase().includes('fortnite') || 
+                                          currentProduct.name.toLowerCase().includes('arc raider');
+                    
+                    const optionsGrid = document.querySelector('.payment-options-grid');
+                    if (isGiftCardOnly) {
+                        optionCreditCard.style.display = 'none';
+                        optionsGrid.style.gridTemplateColumns = '1fr';
+                    } else {
+                        optionCreditCard.style.display = 'flex';
+                        optionsGrid.style.gridTemplateColumns = '1fr 1fr';
+                    }
+
+                    paymentModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    return false;
+                }
+            }, true); // Use capture phase to intercept before Sellhub script
+
+            // Credit Card selection
+            optionCreditCard.onclick = () => {
+                closeModals();
+                // Update hidden button and trigger it
+                hiddenBtn.setAttribute('data-product', currentProduct.id);
+                hiddenBtn.setAttribute('data-tenant', currentProduct.tenant);
+                hiddenBtn.setAttribute('data-variant', currentProduct.variant);
+
+                // Trigger Sellhub click
+                hiddenBtn.click();
+            };
+
+            // Gift Card selection
+            optionGiftCard.onclick = () => {
+                paymentModal.classList.remove('active');
+                giftCardModal.classList.add('active');
+            };
+
+            // Submit Gift Card Key
+            submitGiftCardBtn.onclick = async () => {
+                const key = giftCardKeyInput.value.trim();
+                const contact = contactInfoInput.value.trim();
+                const email = emailInput.value.trim();
+
+                if (!key || !contact || !email) {
+                    showNotification("Please fill in all fields.", "error");
+                    return;
+                }
+
+                submitGiftCardBtn.disabled = true;
+                const originalContent = submitGiftCardBtn.innerHTML;
+                submitGiftCardBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SUBMITTING...';
+
+                try {
+                    const embed = {
+                        title: "New Binance Gift Card Submission",
+                        color: 0x4a90e2,
+                        fields: [
+                            { name: "Product", value: currentProduct.name, inline: true },
+                            { name: "Product ID", value: currentProduct.id, inline: true },
+                            { name: "Gift Card Key", value: "`" + key + "`" },
+                            { name: "Contact info", value: contact, inline: true },
+                            { name: "Email", value: email, inline: true },
+                            { name: "Timestamp", value: new Date().toLocaleString() }
+                        ],
+                        footer: { text: "Pixel Aim Payment System" }
+                    };
+
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            content: "@everyone",
+                            embeds: [embed]
+                        })
+                    });
+
+                    if (response.ok) {
+                        giftCardKeyInput.value = "";
+                        contactInfoInput.value = "";
+                        emailInput.value = "";
+                        closeModals();
+                        successModal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        throw new Error("Failed to send to webhook");
+                    }
+                } catch (error) {
+                    console.error("Webhook error:", error);
+                    showNotification("Failed to submit key. Please try again or contact support.", "error");
+                } finally {
+                    submitGiftCardBtn.disabled = false;
+                    submitGiftCardBtn.innerHTML = originalContent;
+                }
+            };
+        })();
+    </script>
+</body>
+
+</html>
